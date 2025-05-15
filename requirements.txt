@@ -3,3 +3,4 @@ opencv-python
 pytesseract
 regex
 Pillow
+textblob

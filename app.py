@@ -3,7 +3,7 @@ import pytesseract
 import cv2
 import numpy as np
 from PIL import Image
-from utils import preprocess_image, format_text
+from utils import preprocess_image, format_text, extract_text_line_by_line
 
 st.markdown("---")  # horizontal line
 st.title("📝 Smart Handwriting to Notes Converter")
@@ -23,11 +23,11 @@ if uploaded_file:
     processed_img = preprocess_image(img_cv)
     st.image(processed_img, caption="Processed Image (for OCR)", use_container_width=True, channels="GRAY")
 
-    # Perform OCR using Tesseract
+      # Perform OCR using Tesseract
     extracted_text = pytesseract.image_to_string(processed_img, config="--psm 6 --oem 1")
 
     # Optional spell correction
-    apply_spellcheck = st.checkbox("🛠️ Apply Spell Correction (Experimental)", value=False)
+    apply_spellcheck = st.checkbox("🛠 Apply Spell Correction (Experimental)", value=False)
 
     st.subheader("Formatted Notes")
     formatted_text = format_text(extracted_text, correct_spelling=apply_spellcheck)
@@ -41,3 +41,5 @@ if uploaded_file:
         file_name="notes.txt",
         mime="text/plain"
     )
+
+

@@ -1,6 +1,7 @@
 import re
 import cv2
 import numpy as np
+import pytesseract
 
 def preprocess_image(image):
     """
@@ -27,7 +28,6 @@ def preprocess_image(image):
     
     return thresh
 
-
 def clean_extracted_text(text):
     """
     Clean the OCR text by removing non-ASCII characters and unnecessary whitespace.
@@ -37,7 +37,6 @@ def clean_extracted_text(text):
     text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with one
     return text.strip()
 
-
 def save_text_to_file(text, filename="notes.txt"):
     """
     Save cleaned text to a .txt file.
@@ -46,13 +45,15 @@ def save_text_to_file(text, filename="notes.txt"):
         f.write(text)
     return filename
 
-
-def format_text(text, correct_spelling=False):  # `correct_spelling` kept for API compatibility
+def format_text(text, correct_spelling=False):  # correct_spelling kept for API compatibility
+    """
+    Apply light formatting to improve readability of OCR text.
+    """
     text = text.replace("—", "-").replace("–", "-").replace("_", " ")
-    text = re.sub(r"[|~•*]", "", text)  # remove common OCR border artifacts
-    text = re.sub(r"[-=]{2,}", "-", text)  # clean long dashes
-    text = re.sub(r"\s{2,}", " ", text)  # normalize spaces
-    text = re.sub(r"\n{2,}", "\n", text)  # clean multiple newlines
+    text = re.sub(r"[|~•*]", "", text)  # Remove common OCR border artifacts
+    text = re.sub(r"[-=]{2,}", "-", text)  # Clean long dashes
+    text = re.sub(r"\s{2,}", " ", text)  # Normalize spaces
+    text = re.sub(r"\n{2,}", "\n", text)  # Clean multiple newlines
 
     # Manual OCR error corrections
     corrections = {
@@ -69,8 +70,6 @@ def format_text(text, correct_spelling=False):  # `correct_spelling` kept for AP
     for wrong, correct in corrections.items():
         text = text.replace(wrong, correct)
 
-    # Skip spell correction entirely
-
     lines = text.split("\n")
     formatted_lines = []
 
@@ -78,7 +77,28 @@ def format_text(text, correct_spelling=False):  # `correct_spelling` kept for AP
         line = line.strip()
         if not line:
             continue
-        # Apply formatting
+        if line.isupper() and len(line) > 3:
+            formatted_lines.append(f"\n### {line.title()}\n")
+        elif re.match(r"^[\-+*]", line):
+            formatted_lines.append(f"- {line[1:].strip()}")
+        else:
+            formatted_lines.append(line)
+
+    return "\n".join(formatted_lines)
+
+def extract_text_line_by_line(image):
+    """
+    Extract text from an image, line by line, using pytesseract.
+    This function assumes the image has already been preprocessed.
+    """
+    text = pytesseract.image_to_string(image, config='--psm 6')  # PSM 6 assumes a single uniform block of text
+    lines = text.split("\n")
+    formatted_lines = []
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
         if line.isupper() and len(line) > 3:
             formatted_lines.append(f"\n### {line.title()}\n")
         elif re.match(r"^[\-+*]", line):

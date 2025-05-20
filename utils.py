@@ -15,6 +15,9 @@ def preprocess_image(image):
 
     # Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Enhance contrast
+    gray = cv2.convertScaleAbs(gray, alpha=1.5, beta=0)
 
     # Denoising using GaussianBlur
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -25,6 +28,11 @@ def preprocess_image(image):
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
         cv2.THRESH_BINARY_INV, 11, 2
     )
+
+    # Morphological operation to thicken handwriting (dilation)
+    kernel = np.ones((2, 2), np.uint8)
+    thresh = cv2.dilate(thresh, kernel, iterations=1)
+
     
     return thresh
 

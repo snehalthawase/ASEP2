@@ -53,14 +53,16 @@ if uploaded_file:
     st.subheader("Formatted Notes")
     formatted_text = format_text(extracted_text, correct_spelling=apply_spellcheck)
 
-    st.text_area("Formatted Output", formatted_text, height=300)
+    edited_text = st.text_area("Formatted Output", value=formatted_text, height=300)
+
     st.text_area("Raw OCR Output", extracted_text, height=300)
 
-    st.download_button(
-        label="📥 Download Notes as .txt",
-        data=formatted_text,
-        file_name="notes.txt",
-        mime="text/plain"
-    )
+    if st.download_button(
+    label="📥 Download Notes as .txt",
+    data=edited_text,
+    file_name="notes.txt",
+    mime="text/plain"
+    ):
+     st.success("✅ Your edited notes were saved successfully!")
 
 
